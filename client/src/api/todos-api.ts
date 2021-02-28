@@ -65,7 +65,6 @@ export async function getUploadUrl(
       'Authorization': `Bearer ${idToken}`
     }
   })
-  alert("response.data.uploadUrl:" +response.data.uploadUrl)
   return response.data.uploadUrl
 }
 

@@ -15,12 +15,12 @@ export async function getAllTodos(userId: string): Promise<TodoItem[]> {
 export async function createTodo(
   createTodoRequest: CreateTodoRequest,
   jwtToken: string
-): Promise<TodoItem> {
+): Promise<String> {
 
   const itemId = uuid.v4()
   const userId = parseUserId(jwtToken)
 
-  return await todoAccess.createTodo({
+  await todoAccess.createTodo({
     todoId: itemId,
     createdAt: new Date().toISOString(),
     name: createTodoRequest.name,
@@ -29,6 +29,7 @@ export async function createTodo(
     attachmentUrl: createTodoRequest.attachmentUrl,
     userId: userId
   })
+  return itemId
 }
 
 export async function deleteTodo(userId: string, todoId: string): Promise<string>  {
@@ -46,9 +47,8 @@ export async function updateTodo(
 
 export async function updateImageURL(
     userId: string,
-    todoId: string,
-    attachmentId: string
+    todoId: string
 ): Promise<String> {
 
-    return await todoAccess.generateUploadUrl(userId, todoId, attachmentId)
+    return await todoAccess.generateUploadUrl(userId, todoId)
 }

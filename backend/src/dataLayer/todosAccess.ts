@@ -8,7 +8,8 @@ import * as AWS  from 'aws-sdk'
 
 const XAWS = AWSXRay.captureAWS(AWS)
 
-
+import { createLogger } from '../utils/logger'
+const logger = createLogger('generateUploadUrl')
 
 export class TodoAccess {
 
@@ -78,24 +79,27 @@ export class TodoAccess {
     return { Updated: updtedTodo };
   }
 
-  async generateUploadUrl(userId: string, todoId: string, attachmentUrl: string): Promise<string> {
-    const uploadUrl = this.S3.getSignedUrl("putObject", {
+  async generateUploadUrl(userId: string, todoId: string): Promise<string> {
+    const url = this.S3.getSignedUrl('putObject', {
       Bucket: this.bucketName,
-      Key: attachmentUrl,
+      Key: todoId,
       Expires: this.urlExpiration
-    });
-    console.log('uploadUrl=' + uploadUrl)
-        
-    const params = {
-      TableName: this.todosTable,
-      Key: { userId, todoId },
-      UpdateExpression: "set attachmentUrl = :attachmentUrl",
-      ExpressionAttributeValues: {
-        ":attachmentUrl": `https://${this.bucketName}.s3.amazonaws.com/${attachmentUrl}`
-      }
-    }
-    console.log("params:" + params)
-    await this.docClient.update(params).promise();
-    return uploadUrl;
+    })
+    const attachmentUrl: string = 'https://' + this.bucketName + '.s3.amazonaws.com/' + todoId
+    const options = {
+        TableName: this.todosTable,
+        Key: {
+            userId: userId,
+            todoId: todoId
+        },
+        UpdateExpression: "set attachmentUrl = :r",
+        ExpressionAttributeValues: {
+            ":r": attachmentUrl
+        },
+        ReturnValues: "UPDATED_NEW"
+    };
+    await this.docClient.update(options).promise()
+    logger.info("Presigned url generated successfully ", url)
+    return url;
   }
 }

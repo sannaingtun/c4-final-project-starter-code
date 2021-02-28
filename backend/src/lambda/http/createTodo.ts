@@ -16,11 +16,11 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const split = authorization.split(' ')
   const jwtToken = split[1]
 
-  const newItem = await createTodo(newTodo, jwtToken)
+  const todoId = await createTodo(newTodo, jwtToken)
     
   const logger = createLogger('createTodo')
   logger.info('Todo is created', {
-    item : newItem
+    item : newTodo
   })
 
   return {
@@ -30,7 +30,11 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       'Access-Control-Allow-Credentials': true
     },
     body: JSON.stringify({
-      newItem
+      item:
+          {
+            todoId: todoId,
+            ...newTodo
+          }
     })
   }
 }
